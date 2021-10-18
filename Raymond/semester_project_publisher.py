@@ -1,85 +1,47 @@
 import serial
 import time
-import sys
-import json
+import string
 import paho.mqtt.publish as publish
-import paho.mqtt.client as mqtt
-from threading import Thread
-from abc import ABCMeta, abstractmethod
 
+# read and write data from and to arduino serially
+# input the correct rf channel into the parameter, rfcomm0 is normally the defult for the first connection
+# input the IP address of the aws broker
 
-class ITopic:
-    def getTopic(self):
-        return self.mName
+ser = serial.Serial("/dev/rfcomm0", 9600)
+ipaddr = ""
 
-    @abstractmethod
-    def proc(self, msg):
-        pass
+while True:
+    if ser.in_waiting > 0:
+        rawserial = ser.readline()
+        rawstring = rawserial.decode('utf8').strip('\r\n')
 
+        # Split the whole string in to a list and take out the information needed
 
-class NotificationTopic(ITopic):
-    def __init__(self):
-        self.mName = 'group6Notification'
+        x = rawstring.strip().split()
 
-    def proc(self, msg):
-        print(self.mName, ' : ', msg.payload.decode("utf-8"))
-        # to process message for the topic of Notification
-        # this topic will contain laundry indication and weather summary for user.
+        # input the index of each information
 
+        wind = x[]  # Insert wind speed index here
 
-class DataTopic(ITopic):
-    def __init__(self):
-        self.mName = 'group6Data'
+        humid = x[1].split("%")
+        temp = x[3].split("C")
+        light = x[17]
+        print(" ")
 
-    def proc(self, msg):
-        print(self.mName, ' : ', msg.payload.decode("utf-8"))
-        # to process message for topic of Notification
-        # this topic will contain data of humidity, temperature, light intensity and wind level
+        # ----------------------Final form of the required data ---------------------------
 
+        wd = ()  # Insert wind speed information here
 
-class MQTTClient:
-    def __init__(self, addr, topic):
-        self.mClient = mqtt.Client(userdata=self)
-        self.mClient.on_connect = self.on_connect
-        self.mClient.on_message = self.on_message
-        self.mClient.connect(addr, 1883, 60)
-        self.mTopic = topic
-        time.sleep(1)
+        th = ("humidity: " + str(humid[0]) + " Temperature: " + str(temp[0]))
+        li = ("Light intensity: " + light)
+        print(th + li)
 
-    @staticmethod
-    def on_connect(client, userdata, flag, rc):
-        print("Connected to MQTT")
-        print("Connection returned result: " + str(rc))
+        # ----------------------Set Threshold Control---------------------------------------
+        # Set threshold control
+        nmsg = "threshold has not been set yet!!!"
 
-        userdata.mClient.subscribe(userdata.mTopic.mName)
-
-    @staticmethod
-    def on_message(client, userdata, msg):
-        #print(msg.topic+" "+str(msg.payload))
-        userdata.mTopic.proc(msg)
-
-    def start(self):
-        self.mClient.loop_start()
-
-    def stop(self):
-        self.mClient.loop_stop(True)
-
-
-def main():
-    client1 = MQTTClient("3.25.68.204", NotificationTopic())
-    client1.start()
-
-    client2 = MQTTClient("3.25.68.204", DataTopic())
-    client2 = start()
-
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        client1.stop()
-        client2.stop()
-        pass
-
-
-if __name__ == "__main__":
-    main()
+        # ----------------------Publish the Information-------------------------------------
+        publish.single("group6Data", th+li, hostname="3.25.68.204")
+        print("Done")
+        publish.single("group6Notification", nmsg, hostname="3.25.68.204")
+        print("Done")
