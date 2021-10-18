@@ -1,31 +1,85 @@
 import serial
-import time 
-import string 
-import paho.mqtt.publish as publish 
+import time
+import sys
+import json
+import paho.mqtt.publish as publish
+import paho.mqtt.client as mqtt
+from threading import Thread
+from abc import ABCMeta, abstractmethod
 
-#read and write data from and to arduino serially 
-# input the correct rf channel into the parameter, rfcomm0 is normally the defult for the first connection 
-# input the IP address of the aws broker 
 
-ser = serial.Serial("/dev/rfcomm0", 9600)
-ipaddr = ""
+class ITopic:
+    def getTopic(self):
+        return self.mName
 
-while True:
-	if ser.in_waiting > 0:
-		rawserial = ser.readline()
-		rawstring = rawserial.decode('utf8').strip('\r\n')
+    @abstractmethod
+    def proc(self, msg):
+        pass
 
-		# Split the whole string in to a list and take out the information needed 
 
-		x = rawstring.strip().split()
+class NotificationTopic(ITopic):
+    def __init__(self):
+        self.mName = 'group6Notification'
 
-		# input the index of each information 
-		wind = x[]
-		humid = x[].split("%")
-		temp = x[].split("C")
-		light = x[]
-		print(" ")
+    def proc(self, msg):
+        print(self.mName, ' : ', msg.payload.decode("utf-8"))
+        # to process message for the topic of Notification
+        # this topic will contain laundry indication and weather summary for user.
 
-		#Set threshold control 
 
-		
+class DataTopic(ITopic):
+    def __init__(self):
+        self.mName = 'group6Data'
+
+    def proc(self, msg):
+        print(self.mName, ' : ', msg.payload.decode("utf-8"))
+        # to process message for topic of Notification
+        # this topic will contain data of humidity, temperature, light intensity and wind level
+
+
+class MQTTClient:
+    def __init__(self, addr, topic):
+        self.mClient = mqtt.Client(userdata=self)
+        self.mClient.on_connect = self.on_connect
+        self.mClient.on_message = self.on_message
+        self.mClient.connect(addr, 1883, 60)
+        self.mTopic = topic
+        time.sleep(1)
+
+    @staticmethod
+    def on_connect(client, userdata, flag, rc):
+        print("Connected to MQTT")
+        print("Connection returned result: " + str(rc))
+
+        userdata.mClient.subscribe(userdata.mTopic.mName)
+
+    @staticmethod
+    def on_message(client, userdata, msg):
+        #print(msg.topic+" "+str(msg.payload))
+        userdata.mTopic.proc(msg)
+
+    def start(self):
+        self.mClient.loop_start()
+
+    def stop(self):
+        self.mClient.loop_stop(True)
+
+
+def main():
+    client1 = MQTTClient("3.25.68.204", NotificationTopic())
+    client1.start()
+
+    client2 = MQTTClient("3.25.68.204", DataTopic())
+    client2 = start()
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        client1.stop()
+        client2.stop()
+        pass
+
+
+if __name__ == "__main__":
+    main()
