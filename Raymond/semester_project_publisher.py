@@ -7,7 +7,7 @@ import paho.mqtt.publish as publish
 # input the correct rf channel into the parameter, rfcomm0 is normally the defult for the first connection
 # input the IP address of the aws broker
 
-ser = serial.Serial("/dev/rfcomm0", 9600)
+ser = serial.Serial("/dev/rfcomm2", 9600)
 ipaddr = ""
 
 while True:
@@ -21,7 +21,7 @@ while True:
 
         # input the index of each information
 
-        wind = x[]  # Insert wind speed index here
+        # wind = x[] #Insert wind speed index here
 
         humid = x[1].split("%")
         temp = x[3].split("C")
@@ -30,7 +30,7 @@ while True:
 
         # ----------------------Final form of the required data ---------------------------
 
-        wd = ()  # Insert wind speed information here
+        # wd = () # Insert wind speed information here
 
         th = ("humidity: " + str(humid[0]) + " Temperature: " + str(temp[0]))
         li = ("Light intensity: " + light)
