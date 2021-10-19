@@ -1,85 +1,80 @@
 import serial
 import time
 import sys
-import json
+import string
 import paho.mqtt.publish as publish
-import paho.mqtt.client as mqtt
-from threading import Thread
-from abc import ABCMeta, abstractmethod
+from sense_hat import SenseHat
+
+# read and write data from and to arduino serially
+# input the correct rf channel into the parameter, rfcomm0 is normally the defult for the first connection
+# input the IP address of the aws broker
+
+ser = serial.Serial("/dev/rfcomm0", 9600)
+
+# using sense hat led as indicator
+sense = SenseHat()
+# setting colors
+red = (255, 0, 0)
+green = (0, 255, 0)
+yellow = (255, 255, 0)
 
 
-class ITopic:
-    def getTopic(self):
-        return self.mName
+while True:
+    if ser.in_waiting > 0:
+        rawserial = ser.readline()
+        rawstring = rawserial.decode('utf8').strip('\r\n')
 
-    @abstractmethod
-    def proc(self, msg):
-        pass
+        # Split the whole string in to a list and take out the information needed
 
+        x = rawstring.strip().split()
 
-class NotificationTopic(ITopic):
-    def __init__(self):
-        self.mName = 'group6Notification'
+        # input the index of each information
 
-    def proc(self, msg):
-        print(self.mName, ' : ', msg.payload.decode("utf-8"))
-        # to process message for the topic of Notification
-        # this topic will contain laundry indication and weather summary for user.
+        # wind = x[] #Insert wind speed index here
 
+        humid = x[1].split("%")
+        temp = x[3].split("C")
+        light = x[17]
+        print(" ")
 
-class DataTopic(ITopic):
-    def __init__(self):
-        self.mName = 'group6Data'
+        # ----------------------Final form of the required data ---------------------------
 
-    def proc(self, msg):
-        print(self.mName, ' : ', msg.payload.decode("utf-8"))
-        # to process message for topic of Notification
-        # this topic will contain data of humidity, temperature, light intensity and wind level
+        # wd = () # Insert wind speed information here
 
+        th = ("humidity: " + str(humid[0]) + " Temperature: " + str(temp[0]))
+        li = ("Light intensity: " + light)
+        print(th + li)
 
-class MQTTClient:
-    def __init__(self, addr, topic):
-        self.mClient = mqtt.Client(userdata=self)
-        self.mClient.on_connect = self.on_connect
-        self.mClient.on_message = self.on_message
-        self.mClient.connect(addr, 1883, 60)
-        self.mTopic = topic
-        time.sleep(1)
+        # ----------------------Set Threshold Control---------------------------------------
+        # Set threshold control
+        H = float(humid[0])
+        T = float(temp[0])
+        L = float(light)
 
-    @staticmethod
-    def on_connect(client, userdata, flag, rc):
-        print("Connected to MQTT")
-        print("Connection returned result: " + str(rc))
+        if (H < 70 and T > 20 and L > 140):
+            nmsg = "The weather right now is suitable for drying laundry!!!"
+            sense.show_letter("Y", green)
+        elif (H < 70 and T > 30 and L > 550):
+            nmsg = "Go do your laundry now!!! The weather is great!!!"
+            sense.show_letter("G", yellow)
+        else:
+            nmsg = "Ops, the weather is not too good right now, you might want to do laundry at another time."
+            sense.show_letter("N", red)
 
-        userdata.mClient.subscribe(userdata.mTopic.mName)
+        print(nmsg)
 
-    @staticmethod
-    def on_message(client, userdata, msg):
-        #print(msg.topic+" "+str(msg.payload))
-        userdata.mTopic.proc(msg)
+        # ----------------------Publish the Information-------------------------------------
+        publish.single("group6Data", th+li, hostname="3.25.68.204")
+        print("Done")
+        publish.single("group6Notification", nmsg, hostname="3.25.68.204")
+        print("Done")
 
-    def start(self):
-        self.mClient.loop_start()
+        # ---------------------Sleep 3 seconds and clean the sense hat ---------------------
+        # ---------------------KeyboardInterrupt to quit the program -----------------------
+        try:
+            # if there is time control in the teensy code, this line can be removed
+            time.sleep(3)
 
-    def stop(self):
-        self.mClient.loop_stop(True)
-
-
-def main():
-    client1 = MQTTClient("3.25.68.204", NotificationTopic())
-    client1.start()
-
-    client2 = MQTTClient("3.25.68.204", DataTopic())
-    client2.start()
-
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        client1.stop()
-        client2.stop()
-        pass
-
-
-if __name__ == "__main__":
-    main()
+        except KeyboardInterrupt:
+            sense.clear()
+            sys.exit()
