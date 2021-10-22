@@ -55,8 +55,27 @@ class MQTTClient:
 
     @staticmethod
     def on_message(client, userdata, msg):
-        #print(msg.topic+" "+str(msg.payload))
+
         userdata.mTopic.proc(msg)
+        x = msg.payload.decode("utf-8").strip().split()
+        ser = serial.Serial("/dev/rfcomm3", 9600)
+        ser.write(str.encode('Start\r\n'))
+        if(x[0] == "Level0!"):
+            ser.write(b"RedLed_ON\n")
+            ser.write(b"GreenLed_OFF\n")
+            ser.write(b"YellowLed_OFF\n")
+        elif(x[0] == "Level1!"):
+            ser.write(b"RedLed_OFF\n")
+            ser.write(b"GreenLed_ON\n")
+            ser.write(b"YellowLed_OFF\n")
+        elif(x[0] == "Level2!"):
+            ser.write(b"RedLed_OFF\n")
+            ser.write(b"GreenLed_OFF\n")
+            ser.write(b"YellowLed_ON\n")
+        else:
+            ser.write(b"RedLed_OFF\n")
+            ser.write(b"GreenLed_OFF\n")
+            ser.write(b"YellowLed_OFF\n")
 
     def start(self):
         self.mClient.loop_start()

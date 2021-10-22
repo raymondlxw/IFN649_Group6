@@ -73,7 +73,7 @@ while True:
         # ---------------------KeyboardInterrupt to quit the program -----------------------
         try:
             # if there is time control in the teensy code, this line can be removed
-            time.sleep(3)
+            time.sleep(1)
 
         except KeyboardInterrupt:
             sense.clear()
