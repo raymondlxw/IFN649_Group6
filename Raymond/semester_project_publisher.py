@@ -30,31 +30,30 @@ while True:
 
         # input the index of each information
 
-        # wind = x[] #Insert wind speed index here
-
+        wind = x[14]  # Insert wind speed index here
         humid = x[1].split("%")
         temp = x[3].split("C")
-        light = x[17]
+        light = x[12]
         print(" ")
 
         # ----------------------Final form of the required data ---------------------------
 
-        # wd = () # Insert wind speed information here
-
-        th = ("humidity: " + str(humid[0]) + " Temperature: " + str(temp[0]))
-        li = ("Light intensity: " + light)
-        print(th + li)
+        wi = (" Wind Level: " + wind)  # Insert wind speed information here
+        th = ("Humidity: " + str(humid[0]) + " Temperature: " + str(temp[0]))
+        li = (" Light intensity: " + light)
+        print(th + li + wi)
 
         # ----------------------Set Threshold Control---------------------------------------
         # Set threshold control
         H = float(humid[0])
         T = float(temp[0])
         L = float(light)
+        W = float(wind)
 
-        if (H < 70 and T > 20 and L > 140):
+        if (H < 70 and T > 20 and L > 140 and W > 20):
             nmsg = "The weather right now is suitable for drying laundry!!!"
             sense.show_letter("Y", green)
-        elif (H < 70 and T > 30 and L > 550):
+        elif (H < 70 and T > 30 and L > 550 and W > 25):
             nmsg = "Go do your laundry now!!! The weather is great!!!"
             sense.show_letter("G", yellow)
         else:
@@ -72,8 +71,7 @@ while True:
         # ---------------------Sleep 3 seconds and clean the sense hat ---------------------
         # ---------------------KeyboardInterrupt to quit the program -----------------------
         try:
-            # if there is time control in the teensy code, this line can be removed
-            time.sleep(1)
+            pass
 
         except KeyboardInterrupt:
             sense.clear()
