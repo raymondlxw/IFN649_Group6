@@ -70,27 +70,29 @@ void dataRead()
     Serial.print(light);
     Serial1.print(" Current brightness is ");
     Serial1.print(light);
+    int wind = 0;
+    int wind2 = 0;
+    //delay(1000);
+    wind = analogRead(windSensor);
+    for(int i=0; i<10; i++){
+        delay(1000);
+        wind2 = analogRead(windSensor);
+        if( wind2> wind){
+            wind = wind2;
+            i++;
+        }
+
+    }
+    Serial.print("Wind: ");
+    Serial.print(wind);
+    Serial1.print("Wind: ");
+    Serial1.print(wind);
+    
 }
 
 void wind(){
     //for(int i=0; i < 10; i++){
-        int wind;
-        int wind2;
-        //delay(1000);
-        wind = analogRead(windSensor);
-        for(int i=0; i<10; i++){
-            delay(1000);
-            wind2 = analogRead(windSensor);
-            if( wind2> wind){
-                wind = wind2;
-                i++;
-            }
 
-        }
-        Serial.print("Wind: ");
-        Serial.print(wind);
-        Serial1.print("Wind: ");
-        Serial1.print(wind);
 
     //}
     
