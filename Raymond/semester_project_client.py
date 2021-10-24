@@ -58,8 +58,12 @@ class MQTTClient:
 
         userdata.mTopic.proc(msg)
         x = msg.payload.decode("utf-8").strip().split()
+
+        # connect to bluetooth chip that control 3 Leds
         ser = serial.Serial("/dev/rfcomm3", 9600)
         ser.write(str.encode('Start\r\n'))
+
+        # control command for Leds
         if(x[0] == "Level0!"):
             ser.write(b"RedLed_ON\n")
             ser.write(b"GreenLed_OFF\n")
