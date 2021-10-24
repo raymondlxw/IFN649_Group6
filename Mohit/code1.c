@@ -87,6 +87,7 @@ void dataRead()
     Serial.print(wind);
     Serial1.print("Wind: ");
     Serial1.print(wind);
+    wind = 0;
     
 }
 
