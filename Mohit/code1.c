@@ -24,6 +24,7 @@ void loop()
     // put your main code here, to run repeatedly:
     delay(dlt);
     dataRead();
+    wind();
     Serial.println("");
     Serial1.println("");
 }
