@@ -70,6 +70,7 @@ void dataRead()
     Serial.print(light);
     Serial1.print(" Current brightness is ");
     Serial1.print(light);
+    
     int wind = 0;
     int wind2 = 0;
     //delay(1000);
@@ -87,14 +88,6 @@ void dataRead()
     Serial.print(wind);
     Serial1.print("Wind: ");
     Serial1.print(wind);
-    wind = 0;
-    
-}
-
-void wind(){
-    //for(int i=0; i < 10; i++){
-
-
-    //}
+    wind == 0;
     
 }
