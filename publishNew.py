@@ -6,10 +6,11 @@ from awsiot import mqtt_connection_builder
 import time as t
 import json
 import threading
-
+import serial
+import re
 
 #TODO Serial bluetooth connection
-#
+ser = serial.Serial("/dev/rfcomm0", 9600)
 #Serial bluetooth connection 
 
 
@@ -39,28 +40,21 @@ PATH_TO_ROOT = "certificates/root.pem"
 
 #TOPICS:
 TOPIC_WIND = "laundry/wind"
-#b_wind = 249
-MESSAGE_WIND = 110 ##TODO change with value from bluetooth "MESSAGE_WIND = b_wind"##
-
-
+counter = 0
+b_wind = counter
+MESSAGE_WIND = 100 ##TODO change with value from bluetooth "MESSAGE_WIND = b_wind"##
 
 TOPIC_HUMIDITY = "laundry/humidity"
-#b_hum = 97
-MESSAGE_HUMIDITY = 20 ##TODO change with value from bluetooth "MESSAGE_HUMIDITY = b_hum"##
-
-
+b_hum = 97
+MESSAGE_HUMIDITY = b_hum ##TODO change with value from bluetooth "MESSAGE_HUMIDITY = b_hum"##
 
 TOPIC_TEMP = "laundry/temperature"
-#b_temp = 27
-MESSAGE_TEMP = 21 ##TODO change with value from bluetooth "MESSAGE_TEMP = b_temp"##
-
-
+b_temp = 27
+MESSAGE_TEMP = b_temp ##TODO change with value from bluetooth "MESSAGE_TEMP = b_temp"##
 
 TOPIC_PHOTO = "laundry/photoresistor"
-#b_photo = 30
-MESSAGE_PHOTO = 77 ##TODO change with value from bluetooth "MESSAGE_PHOTO = b_photo"
-
-
+# b_photo = 30
+# MESSAGE_PHOTO = b_photo ##TODO change with value from bluetooth "MESSAGE_PHOTO = b_photo"
 
 
 
@@ -93,61 +87,48 @@ bluetooth = 1 #Testing variable while bluetooth is not connected
 i = 0
 while True:
     t.sleep(1.5)
-    if bluetooth > 0:  #TODO Change "bluetooth" to "ser.in_waiting > 0" to check connection from bluetooth
-
-        if (MESSAGE_WIND > 500):
-            MESSAGE_WIND -= 400    
-        else:
-            MESSAGE_WIND+=10
-        
-
-        print('WIND_MESSAGE is',format(MESSAGE_WIND))
+    if ser.in_waiting > 0:
+      #TODO Change "bluetooth" to "ser.in_waiting > 0" to check connection from bluetooth
+        rawserial = ser.readline()
+        rawstring = rawserial.decode('utf8').strip('\r\n')
+        print('The raw data is:')
+        print(rawstring)
+#         num = re.findall("\d+\.\d+",str(rawstring))
+        num = re.findall("\d+",str(rawstring))
+        print('Only numbers are:')
+        print(num)
+        # tempC = num[1]
+        # moist = num[5]
+        photo = num[0]
+        # wind = num[3]
+        # MESSAGE_WIND = 100 ##TODO change with value from bluetooth "MESSAGE_WIND = b_wind"##
+        # MESSAGE_HUMIDITY = b_hum ##TODO change with value from bluetooth "MESSAGE_HUMIDITY = b_hum"##
+        # MESSAGE_TEMP = b_temp ##TODO change with value from bluetooth "MESSAGE_TEMP = b_temp"##
+        MESSAGE_PHOTO = photo
         def wind_sensor(TOPIC_WIND, MESSAGE_WIND):
             data_wind = "{}".format(MESSAGE_WIND)
             message_wind = {"Wind" : int(data_wind)}
             mqtt_connection.publish(topic=TOPIC_WIND, payload=json.dumps(message_wind), qos=mqtt.QoS.AT_LEAST_ONCE)
-            print('Publish wind sensor data')            
+            print('Publish wind sensor data')
+            print(MESSAGE_WIND)
             t.sleep(1)
-
-
-        if (MESSAGE_HUMIDITY > 200):
-            MESSAGE_HUMIDITY -= 170    
-        else:
-            MESSAGE_HUMIDITY+=7
-        
         def hum_sensor(TOPIC_HUMIDITY, MESSAGE_HUMIDITY):
             data_hum = "{}".format(MESSAGE_HUMIDITY)
             message_hum = {"Humidity" : int(data_hum)}
             mqtt_connection.publish(topic=TOPIC_HUMIDITY, payload=json.dumps(message_hum), qos=mqtt.QoS.AT_LEAST_ONCE)
             print('Publish humidity sensor data')
-            print('HUMIDITY_MESSAGE is',format(MESSAGE_HUMIDITY))
             t.sleep(1)
-
-        if (MESSAGE_TEMP > 28):
-            MESSAGE_TEMP -= 13    
-        else:
-            MESSAGE_TEMP+=1
-           
         def temp_sensor(TOPIC_TEMP, MESSAGE_TEMP):
             data_temp = "{}".format(MESSAGE_TEMP)
             message_temp = {"Temperature" : int(data_temp)}
             mqtt_connection.publish(topic=TOPIC_TEMP, payload=json.dumps(message_temp), qos=mqtt.QoS.AT_LEAST_ONCE)
             print('Publish temperature sensor data')
-            print('TEMP_MESSAGE is',format(MESSAGE_TEMP))
             t.sleep(1)
-
-
-        if (MESSAGE_PHOTO > 250):
-            MESSAGE_PHOTO -= 230    
-        else:
-            MESSAGE_PHOTO+=7
-
         def photo_sensor(TOPIC_PHOTO, MESSAGE_PHOTO):
             data_photo = "{}".format(MESSAGE_PHOTO)
             message_photo = {"Photoresistor" : int(data_photo)}
             mqtt_connection.publish(topic=TOPIC_PHOTO, payload=json.dumps(message_photo), qos=mqtt.QoS.AT_LEAST_ONCE)
             print('Publish photoresistor sensor data')
-            print('PHOTO_MESSAGE is',format(MESSAGE_PHOTO))
             t.sleep(1)
 
             #Threading
