@@ -1,8 +1,8 @@
 #include <Wire.h>
 #include "DHT.h"
-const int photoResistor = ; // input the pin that the photoresistor connect to here
+const int photoResistor = 19 ; // input the pin that the photoresistor connect to here
 const int dlt = 1000 ;
-const int windSensor = A0; // input the delay time here to control how often it measure data
+const int windSensor = 20; // input the delay time here to control how often it measure data
 #define rxPin 7             //receiving serial data
 #define txPin 8             //transmitting serial data
 #define DHTPIN 21           // define DHT sensor pin
@@ -72,17 +72,17 @@ void dataRead()
     Serial1.print(" Current brightness is ");
     Serial1.print(light);
 
-    windspeed = ((analogRead(A0) * 0.109) - 19.5);
+    windspeed = ((analogRead(20) * 0.109) - 19.5);
     if(windspeed < 0){
         windspeed = 0;
-        Serial.print("Wind: ");
+        Serial.print(" Wind: ");
         Serial.print(windspeed);
-        Serial1.print("Wind ");
+        Serial1.print(" Wind ");
         Serial1.print(windspeed);
     }else {
-        Serial.print("Wind: ");
+        Serial.print(" Wind: ");
         Serial.print(windspeed);
-        Serial1.print("Wind ");
+        Serial1.print(" Wind ");
         Serial1.print(windspeed);
     }
     
