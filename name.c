@@ -72,7 +72,18 @@ void dataRead()
     Serial1.print(" Current brightness is ");
     Serial1.print(light);
 
-    windspeed = (analogRead(A0) * 0.109);
-    Serial.print("Wind: ");
-    Serial1.print(windspeed);
+    windspeed = ((analogRead(A0) * 0.109) - 19.5);
+    if(windspeed < 0){
+        windspeed = 0;
+        Serial.print("Wind: ");
+        Serial.print(windspeed);
+        Serial1.print("Wind ");
+        Serial1.print(windspeed);
+    }else {
+        Serial.print("Wind: ");
+        Serial.print(windspeed);
+        Serial1.print("Wind ");
+        Serial1.print(windspeed);
+    }
+    
 }
